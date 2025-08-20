@@ -18,4 +18,4 @@ export function handleAnchorClick(e, anchorId) {
     scrollToAnchor();
 }
 
-src/components Directory
+
