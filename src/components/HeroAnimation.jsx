@@ -8,7 +8,7 @@ export function HeroAnimation() {
 
   useEffect(() => {
     // Guard against running in a non-browser environment
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !mountRef.current) return;
 
     let w = mountRef.current.clientWidth;
     const h = 350;
@@ -83,7 +83,7 @@ export function HeroAnimation() {
       cancelAnimationFrame(animationFrameId);
       document.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('resize', handleResize);
-      if (mountRef.current) {
+      if (mountRef.current && renderer.domElement) {
         mountRef.current.removeChild(renderer.domElement);
       }
     };
