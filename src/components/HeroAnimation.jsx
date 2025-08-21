@@ -78,9 +78,6 @@ export function HeroAnimation() {
       };
       window.addEventListener('resize', handleResize);
     };
-
-    // This is the crucial part: We check if THREE is ready.
-    // If not, we wait. If it is, we run our animation setup.
     const waitForThree = () => {
       if (window.THREE) {
         init();
