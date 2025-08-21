@@ -1,11 +1,16 @@
 import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 
 export function HeroAnimation() {
   const mountRef = useRef(null);
 
   useEffect(() => {
-    const w = mountRef.current.clientWidth;
+    // Guard against running in a non-browser environment
+    if (typeof window === 'undefined') return;
+
+    let w = mountRef.current.clientWidth;
     const h = 350;
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 1000);
@@ -25,10 +30,10 @@ export function HeroAnimation() {
     scene.add(pointLight);
 
     const material = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.6, roughness: 0.4 });
-    const loader = new THREE.FontLoader();
+    const loader = new FontLoader();
     
     loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
-      const geometry = new THREE.TextGeometry('§', { font: font, size: 2, height: 0.5 });
+      const geometry = new TextGeometry('§', { font: font, size: 2, height: 0.5 });
       geometry.center();
       for (let i = 0; i < 40; i++) {
         const mesh = new THREE.Mesh(geometry, material);
@@ -51,8 +56,9 @@ export function HeroAnimation() {
     };
     document.addEventListener('mousemove', onMouseMove);
 
+    let animationFrameId;
     const animate = () => {
-      requestAnimationFrame(animate);
+      animationFrameId = requestAnimationFrame(animate);
       targetRotationY = mouseX * 0.001;
       targetRotationX = mouseY * 0.001;
       group.rotation.y += (targetRotationY - group.rotation.y) * 0.05;
@@ -63,14 +69,18 @@ export function HeroAnimation() {
     animate();
 
     const handleResize = () => {
-      const newW = mountRef.current.clientWidth;
-      renderer.setSize(newW, h);
-      camera.aspect = newW / h;
-      camera.updateProjectionMatrix();
+      if (mountRef.current) {
+        w = mountRef.current.clientWidth;
+        renderer.setSize(w, h);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+      }
     };
     window.addEventListener('resize', handleResize);
 
+    // Cleanup function
     return () => {
+      cancelAnimationFrame(animationFrameId);
       document.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('resize', handleResize);
       if (mountRef.current) {
