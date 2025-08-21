@@ -63,10 +63,59 @@ export default function Assessment() {
             <div>
               {q.help && (<details style={{color: 'var(--text-secondary)'}}><summary>Why this matters</summary><div style={{ marginTop: '0.5rem' }}>{q.help}</div></details>)}
               <div style={{ marginTop: '1rem' }}>
-                {/* All form input types rendered here */}
+                {(q.type==='text' || q.type==='email') && (
+                  <div className="form-group">
+                    <input style={{width:'100%', padding: '0.75rem', border:'1px solid var(--border-color)', borderRadius:'var(--radius-md)'}} type={q.type} value={answers[q.id]==="I don't know"? '': (answers[q.id]||'')} placeholder="Type here" onChange={(e)=> setVal({[q.id]: e.currentTarget.value})}/>
+                    <label style={{marginTop: '0.5rem', padding: '0.5rem', border: 'none', cursor: 'pointer'}}><input type='checkbox' checked={answers[q.id]==="I don't know"} onChange={(e)=> setVal({[q.id]: e.currentTarget.checked? "I don't know": ''})}/><span>I don't know</span></label>
+                  </div>
+                )}
+                {q.type==='textarea' && (
+                  <div className="form-group">
+                    <textarea style={{width:'100%', padding: '0.75rem', border:'1px solid var(--border-color)', borderRadius:'var(--radius-md)', fontFamily: 'var(--font-sans)'}} rows={4} value={answers[q.id]==="I don't know"? '': (answers[q.id]||'')} placeholder="Type here" onChange={(e)=> setVal({[q.id]: e.currentTarget.value})}/>
+                    <label style={{marginTop: '0.5rem', padding: '0.5rem', border: 'none', cursor: 'pointer'}}><input type='checkbox' checked={answers[q.id]==="I don't know"} onChange={(e)=> setVal({[q.id]: e.currentTarget.checked? "I don't know": ''})}/><span>I don't know</span></label>
+                  </div>
+                )}
+                {q.type==='single' && (
+                  <div className="form-group">
+                    {[...(q.options||[]), "I don't know"].map(opt=> (
+                      <label key={opt} className={answers[q.id]===opt ? 'selected' : ''}>
+                        <input type='radio' name={q.id} checked={answers[q.id]===opt} onChange={()=> setVal({[q.id]: opt})}/>
+                        <span>{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+                {q.type==='multiselect' && (
+                  <div className="form-group">
+                    {[...(q.options||[]), "I don't know"].map(opt=>{
+                      const arr = Array.isArray(answers[q.id])? answers[q.id]: [];
+                      const isExclusive = EXCLUSIVE.includes(opt);
+                      const anySub = arr.some(v=> !EXCLUSIVE.includes(v));
+                      const disabled = (isExclusive && anySub) || (!isExclusive && arr.some(v=> EXCLUSIVE.includes(v)));
+                      return (
+                        <label key={opt} className={`${arr.includes(opt) ? 'selected' : ''} ${disabled ? 'disabled' : ''}`}>
+                          <input type='checkbox' checked={arr.includes(opt)} disabled={disabled} onChange={(e)=>{
+                            if (e.currentTarget.checked){
+                              let next=[...arr,opt];
+                              if(isExclusive) next=[opt];
+                              else next=next.filter(v=>!EXCLUSIVE.includes(v));
+                              setVal({[q.id]: next});
+                            } else {
+                              setVal({[q.id]: arr.filter(v=> v!==opt)});
+                            }
+                          }}/>
+                          <span>{opt}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
               <div style={{ marginTop: '1rem', color: 'var(--danger)', minHeight: '1.5rem', fontSize: '0.875rem' }}>
-                {/* High risk answers */}
+                {q.id === 'prohibited_practices' && (answers.prohibited_practices || []).filter(x => !['None of the above', "I don't know"].includes(x)).length > 0 && (<>High Risk Answer: Prohibited (Art.5) — you cannot be compliant while this remains in scope.</>)}
+                {q.id === 'annex3_domains' && Array.isArray(answers.annex3_domains) && answers.annex3_domains.some(x => !['None apply', "I don't know"].includes(x)) && (<>High Risk Answer: Annex III selected → obligations apply.</>)}
+                {q.id === 'annex1_sectoral' && Array.isArray(answers.annex1_sectoral) && answers.annex1_sectoral.some(x => !['None', "I don't know"].includes(x)) && (<>High Risk Answer: Annex I safety-component → obligations apply.</>)}
+                {q.id === 'biometric_public_rt' && answers.biometric_public_rt === 'Yes' && (<>High Risk Answer: Real-time public biometric ID is strictly limited.</>)}
               </div>
             </div>
           )}
