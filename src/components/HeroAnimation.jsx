@@ -1,14 +1,13 @@
 import React, { useRef, useEffect } from 'react';
-import * as THREE from 'three';
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 
 export function HeroAnimation() {
   const mountRef = useRef(null);
 
   useEffect(() => {
-    // Guard against running in a non-browser environment
-    if (typeof window === 'undefined' || !mountRef.current) return;
+    // Guard against running in a non-browser environment or if THREE isn't loaded yet
+    if (typeof window === 'undefined' || !window.THREE || !mountRef.current) return;
+
+    const THREE = window.THREE; // Use the globally available THREE object
 
     let w = mountRef.current.clientWidth;
     const h = 350;
@@ -30,10 +29,10 @@ export function HeroAnimation() {
     scene.add(pointLight);
 
     const material = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.6, roughness: 0.4 });
-    const loader = new FontLoader();
+    const loader = new THREE.FontLoader();
     
     loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
-      const geometry = new TextGeometry('§', { font: font, size: 2, height: 0.5 });
+      const geometry = new THREE.TextGeometry('§', { font: font, size: 2, height: 0.5 });
       geometry.center();
       for (let i = 0; i < 40; i++) {
         const mesh = new THREE.Mesh(geometry, material);
