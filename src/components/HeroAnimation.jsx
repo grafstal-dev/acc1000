@@ -78,14 +78,14 @@ export function HeroAnimation() {
       };
       window.addEventListener('resize', handleResize);
     };
+
     const waitForThree = () => {
-      if (window.THREE) {
+      if (window.THREE && window.THREE.FontLoader && window.THREE.TextGeometry) {
         init();
-      } else {
+      } else if (isMounted) {
         setTimeout(waitForThree, 100); // Check again in 100ms
       }
-    };
-    
+    };    
     waitForThree();
 
     // Cleanup function
